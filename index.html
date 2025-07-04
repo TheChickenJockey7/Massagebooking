@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TopRankz Booking System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-light: #f0f8ff;
+      --bg-dark: #1e1e1e;
+      --text-light: #000;
+      --text-dark: #fff;
+      --accent: #00c3ff;
+      --card-light: #ffffffcc;
+      --card-dark: #2a2a2acc;
+    }
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      padding: 2em 1em;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--card-light);
+      padding: 1.5em;
+      border-radius: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    body.dark .card {
+      background: var(--card-dark);
+    }
+
+    input, button {
+      font-family: 'Fredoka', sans-serif;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .link-btn, .toggle-btn {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 0.95em;
+      color: var(--accent);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: var(--card-light);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    body.dark table {
+      background: var(--card-dark);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background: var(--accent);
+      color: white;
+    }
+
+    tr:hover {
+      background: rgba(0, 195, 255, 0.05);
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 10px;
+        background: white;
+      }
+
+      body.dark tr {
+        background: #333;
+      }
+
+      td {
+        border: none;
+        padding: 10px;
+      }
+
+      td:before {
+        content: attr(data-label);
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #999;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📅 TopRankz Booking System</h1>
+
+  <!-- Toggle buttons -->
+  <div>
+    <span class="link-btn" onclick="showSection('booking')">📥 Booking Form</span> | 
+    <span class="link-btn" onclick="showSection('view')">🔍 View Bookings</span> |
+    <span class="toggle-btn" onclick="toggleTheme()">🌓 Toggle Theme</span>
+  </div>
+
+  <!-- Booking Form -->
+  <div id="bookingSection" class="card" style="margin-top: 30px;">
+    <form id="bookingForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="date" id="date" required>
+      <input type="time" id="time" required>
+      <button type="submit">Book Now</button>
+    </form>
+    <div id="confirmation" style="margin-top: 15px;"></div>
+  </div>
+
+  <!-- Booking Viewer -->
+  <div id="viewSection" class="card" style="margin-top: 30px; display: none;">
+    <table id="bookingsTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Code</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    // Show either form or view
+    function showSection(id) {
+      document.getElementById('bookingSection').style.display = (id === 'booking') ? 'block' : 'none';
+      document.getElementById('viewSection').style.display = (id === 'view') ? 'block' : 'none';
+      if (id === 'view') loadBookings();
+    }
+
+    // Dark mode
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // Booking handler
+    const form = document.getElementById('bookingForm');
+    const confirmation = document.getElementById('confirmation');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const code = 'TOP-' + Math.floor(Math.random() * 100000);
+      const booking = { name, date, time, code };
+
+      let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      bookings.push(booking);
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+
+      confirmation.innerHTML = `✅ <strong>${name}</strong>, you're booked for <strong>${date}</strong> at <strong>${time}</strong>.<br>Your code: <code>${code}</code>`;
+      form.reset();
+    });
+
+    // Load bookings
+    function loadBookings() {
+      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      const tbody = document.querySelector('#bookingsTable tbody');
+      tbody.innerHTML = '';
+
+      if (bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No bookings found.</td></tr>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td data-label="Name">${b.name}</td>
+          <td data-label="Date">${b.date}</td>
+          <td data-label="Time">${b.time}</td>
+          <td data-label="Code">${b.code}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Show booking section first
+    showSection('booking');
+  </script>
+
+</body>
+</html>
